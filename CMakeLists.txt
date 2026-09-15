@@ -19,4 +19,3 @@ target_include_directories(mlfs PUBLIC "include/")
 target_link_libraries(mlfs)
 
 add_subdirectory(test)
-add_subdirectory(examples)

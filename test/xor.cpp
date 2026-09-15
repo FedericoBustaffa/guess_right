@@ -90,7 +90,6 @@ int main(int argc, const char** argv)
         {
             auto pred = model(x[i]);
             predictions.push_back(round(pred));
-            std::print("rounded: {}\n", round(pred).item());
             std::print("target: {}, output: {}, prediction: {}\n", y[i].item(),
                        pred.item(), std::round(*pred.item().data()));
         }
