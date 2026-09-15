@@ -37,8 +37,12 @@ Tensor unary_operator(const Tensor& a, Operation operation,
                       const std::function<NDArray(const NDArray&)>& func)
 {
     NDArray data = func(a.item());
+
+    if (ComputationalGraph::no_grad())
+        return Tensor(std::move(data), false);
+
     std::shared_ptr<Node> node =
-        std::make_shared<Node>(data, a.requires_grad(), operation,
+        std::make_shared<Node>(std::move(data), a.requires_grad(), operation,
                                std::vector<std::shared_ptr<Node>>{a.m_Node});
 
     return Tensor(node);
@@ -55,10 +59,34 @@ Tensor binary_operator(
 
     bool requires_grad = a.requires_grad() || b.requires_grad();
     std::shared_ptr<Node> node = std::make_shared<Node>(
-        data, requires_grad, operation,
+        std::move(data), requires_grad, operation,
         std::vector<std::shared_ptr<Node>>{a.m_Node, b.m_Node});
 
     return Tensor(node);
+}
+
+Tensor& binary_assign_operator(
+    Tensor& a, const Tensor& b, Operation operation,
+    const std::function<NDArray(const NDArray&, const NDArray&)>& func)
+{
+    NDArray data = func(a.item(), b.item());
+    std::shared_ptr<Node> old = a.m_Node;
+
+    if (ComputationalGraph::no_grad())
+    {
+        a.m_Node =
+            std::make_shared<Node>(std::move(data), false, Operation::Nop,
+                                   std::vector<std::shared_ptr<Node>>{});
+        return a;
+    }
+
+    bool requires_grad = a.requires_grad() || b.requires_grad();
+
+    a.m_Node = std::make_shared<Node>(
+        std::move(data), requires_grad, operation,
+        std::vector<std::shared_ptr<Node>>{old, b.m_Node});
+
+    return a;
 }
 
 Tensor operator-(const Tensor& a)
@@ -113,6 +141,34 @@ Tensor& Tensor::operator=(Tensor&& other) noexcept
     m_Node = std::move(other.m_Node);
 
     return *this;
+}
+
+Tensor& Tensor::operator+=(const Tensor& other)
+{
+    return binary_assign_operator(
+        *this, other, Operation::Add,
+        [](const NDArray& a, const NDArray& b) { return a + b; });
+}
+
+Tensor& Tensor::operator-=(const Tensor& other)
+{
+    return binary_assign_operator(
+        *this, other, Operation::Sub,
+        [](const NDArray& a, const NDArray& b) { return a - b; });
+}
+
+Tensor& Tensor::operator*=(const Tensor& other)
+{
+    return binary_assign_operator(
+        *this, other, Operation::Mul,
+        [](const NDArray& a, const NDArray& b) { return a * b; });
+}
+
+Tensor& Tensor::operator/=(const Tensor& other)
+{
+    return binary_assign_operator(
+        *this, other, Operation::Div,
+        [](const NDArray& a, const NDArray& b) { return a / b; });
 }
 
 Tensor Tensor::transpose() const

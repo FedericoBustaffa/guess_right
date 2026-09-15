@@ -4,19 +4,10 @@
 #include "activations.hpp"
 #include "computational_graph.hpp"
 #include "losses.hpp"
+#include "metrics.hpp"
 #include "modules.hpp"
 #include "ndarray.hpp"
 #include "optimizer.hpp"
-
-NDArray accuracy_score(const std::vector<Tensor>& predicted,
-                       const std::vector<Tensor>& target)
-{
-    NDArray right = 0;
-    for (size_t i = 0; i < predicted.size(); i++)
-        right += sum(predicted[i].item() == target[i].item());
-
-    return right / predicted.size();
-}
 
 int main(int argc, const char** argv)
 {
@@ -36,9 +27,9 @@ int main(int argc, const char** argv)
     y.emplace_back(NDArray(0.0f), false);
 
     Sequential model;
-    const size_t hidden_dim = 2;
+    const size_t hidden_dim = 8;
     model.add<Linear>(input_dim, hidden_dim);
-    model.add<Tanh>();
+    model.add<LeakyReLU>();
     model.add<Linear>(hidden_dim, output_dim);
     model.add<Sigmoid>();
 
@@ -48,7 +39,7 @@ int main(int argc, const char** argv)
     const size_t batch_size = 1;
     const size_t n_batches = (x.size() + batch_size - 1) / batch_size;
 
-    for (size_t e = 0; e < 10000; e++)
+    for (size_t e = 0; e < 1000; e++)
     {
         // NDArray epoch_loss = 0.0f;
         for (size_t i = 0; i < n_batches; i++)

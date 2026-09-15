@@ -39,6 +39,17 @@ public:
     Tensor forward(const Tensor& x) const override { return maximum(0, x); }
 };
 
+// ------------------
+// --- LEAKY RELU ---
+// ------------------
+class LeakyReLU : public Module
+{
+public:
+    LeakyReLU() = default;
+
+    Tensor forward(const Tensor& x) const override { return maximum(0.01, x); }
+};
+
 // ---------------
 // --- SOFTMAX ---
 // ---------------

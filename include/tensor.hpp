@@ -42,10 +42,10 @@ public:
     // Assign operators
     Tensor& operator=(const Tensor& other);
     Tensor& operator=(Tensor&& other) noexcept;
-    // Tensor& operator+=(const Tensor& other);
-    // Tensor& operator-=(const Tensor& other);
-    // Tensor& operator*=(const Tensor& other);
-    // Tensor& operator/=(const Tensor& other);
+    Tensor& operator+=(const Tensor& other);
+    Tensor& operator-=(const Tensor& other);
+    Tensor& operator*=(const Tensor& other);
+    Tensor& operator/=(const Tensor& other);
 
     // Functions
     Tensor transpose() const;
@@ -76,6 +76,10 @@ private:
 
     friend Tensor binary_operator(
         const Tensor& a, const Tensor& b, Operation operation,
+        const std::function<NDArray(const NDArray&, const NDArray&)>& func);
+
+    friend Tensor& binary_assign_operator(
+        Tensor& a, const Tensor& b, Operation operation,
         const std::function<NDArray(const NDArray&, const NDArray&)>& func);
 
 private: // Members
