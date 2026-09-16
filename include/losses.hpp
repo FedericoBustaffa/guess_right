@@ -85,13 +85,13 @@ public:
     ~BinaryCrossEntropy() = default;
 };
 
-// ---------------------
-// --- CROSS ENTROPY ---
-// ---------------------
-class CrossEntropy : public Loss
+// -------------------------------
+// --- NEGATIVE LOG-LIKELIHOOD ---
+// -------------------------------
+class NegativeLogLikelihood : public Loss
 {
 public:
-    CrossEntropy() = default;
+    NegativeLogLikelihood() = default;
 
     Tensor forward(const Tensor& predicted, const Tensor& target)
     {
@@ -109,7 +109,7 @@ public:
         return loss;
     }
 
-    ~CrossEntropy() = default;
+    ~NegativeLogLikelihood() = default;
 };
 
 #endif

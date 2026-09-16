@@ -12,7 +12,7 @@
 int main(int argc, const char** argv)
 {
     const size_t input_dim = 2;
-    const size_t output_dim = 1;
+    const size_t output_dim = 2;
 
     std::vector<Tensor> x;
     x.emplace_back(NDArray({0.0f, 0.0f}, {2}), false);
@@ -21,20 +21,20 @@ int main(int argc, const char** argv)
     x.emplace_back(NDArray({1.0f, 1.0f}, {2}), false);
 
     std::vector<Tensor> y;
-    y.emplace_back(NDArray(0.0f), false);
-    y.emplace_back(NDArray(1.0f), false);
-    y.emplace_back(NDArray(1.0f), false);
-    y.emplace_back(NDArray(0.0f), false);
+    y.emplace_back(NDArray({1.0f, 0.0f}, {2}), false);
+    y.emplace_back(NDArray({0.0f, 1.0f}, {2}), false);
+    y.emplace_back(NDArray({0.0f, 1.0f}, {2}), false);
+    y.emplace_back(NDArray({1.0f, 0.0f}, {2}), false);
 
     Sequential model;
     const size_t hidden_dim = 8;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<LeakyReLU>();
     model.add<Linear>(hidden_dim, output_dim);
-    model.add<Sigmoid>();
+    model.add<Softmax>();
 
     StochasticGradientDescent sgd(model.parameters(), 1e-2);
-    BinaryCrossEntropy loss_fn;
+    NegativeLogLikelihood loss_fn;
 
     const size_t batch_size = 1;
     const size_t n_batches = (x.size() + batch_size - 1) / batch_size;
@@ -81,8 +81,8 @@ int main(int argc, const char** argv)
         {
             auto pred = model(x[i]);
             predictions.push_back(round(pred));
-            std::print("target: {}, output: {}, prediction: {}\n", y[i].item(),
-                       pred.item(), std::round(*pred.item().data()));
+            std::print("\ntarget: \n{}\n output: \n{}\n\n", y[i].item(),
+                       pred.item());
         }
 
         std::print("accuracy: {}\n", accuracy_score(predictions, y));
