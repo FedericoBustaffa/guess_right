@@ -6,6 +6,9 @@
 
 #include "tensor.hpp"
 
+// ---------------
+// --- DATASET ---
+// ---------------
 class Dataset
 {
 public:
@@ -26,19 +29,30 @@ private:
     std::vector<Tensor> m_Targets;
 };
 
+// --------------
+// --- LOADER ---
+// --------------
 class Loader
 {
 public:
     Loader(const Dataset& dataset, size_t batch_size = 1, bool shuffle = false);
+
+    inline size_t size() const
+    {
+        return (m_Dataset.size() + m_BatchSize - 1) / m_BatchSize;
+    }
+
+    Dataset get();
 
     ~Loader() = default;
 
 private:
     const Dataset& m_Dataset;
     size_t m_BatchSize = 1;
-    bool m_Shuffle = false;
+    size_t m_Current = 0;
 
     std::vector<size_t> m_Indices;
+    bool m_Shuffle = false;
     std::mt19937 m_Rng;
 };
 

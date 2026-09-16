@@ -12,29 +12,29 @@
 int main(int argc, const char** argv)
 {
     const size_t input_dim = 2;
-    const size_t output_dim = 2;
+    const size_t output_dim = 1;
 
     std::vector<Tensor> x;
-    x.emplace_back(NDArray({0.0f, 0.0f}, {2}), false);
-    x.emplace_back(NDArray({0.0f, 1.0f}, {2}), false);
-    x.emplace_back(NDArray({1.0f, 0.0f}, {2}), false);
-    x.emplace_back(NDArray({1.0f, 1.0f}, {2}), false);
+    x.emplace_back(NDArray({0.0f, 0.0f}, {input_dim}), false);
+    x.emplace_back(NDArray({0.0f, 1.0f}, {input_dim}), false);
+    x.emplace_back(NDArray({1.0f, 0.0f}, {input_dim}), false);
+    x.emplace_back(NDArray({1.0f, 1.0f}, {input_dim}), false);
 
     std::vector<Tensor> y;
-    y.emplace_back(NDArray({1.0f, 0.0f}, {2}), false);
-    y.emplace_back(NDArray({0.0f, 1.0f}, {2}), false);
-    y.emplace_back(NDArray({0.0f, 1.0f}, {2}), false);
-    y.emplace_back(NDArray({1.0f, 0.0f}, {2}), false);
+    y.emplace_back(NDArray(0.0f), false);
+    y.emplace_back(NDArray(1.0f), false);
+    y.emplace_back(NDArray(1.0f), false);
+    y.emplace_back(NDArray(0.0f), false);
 
     Sequential model;
     const size_t hidden_dim = 8;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<LeakyReLU>();
     model.add<Linear>(hidden_dim, output_dim);
-    model.add<Softmax>();
+    model.add<Sigmoid>();
 
     StochasticGradientDescent sgd(model.parameters(), 1e-2);
-    NegativeLogLikelihood loss_fn;
+    BinaryCrossEntropy loss_fn;
 
     const size_t batch_size = 1;
     const size_t n_batches = (x.size() + batch_size - 1) / batch_size;
@@ -81,8 +81,7 @@ int main(int argc, const char** argv)
         {
             auto pred = model(x[i]);
             predictions.push_back(round(pred));
-            std::print("\ntarget: \n{}\n output: \n{}\n\n", y[i].item(),
-                       pred.item());
+            std::print("target: {} output: {}\n", y[i].item(), pred.item());
         }
 
         std::print("accuracy: {}\n", accuracy_score(predictions, y));
