@@ -10,7 +10,7 @@ Node::Node(const NDArray& data, bool requires_grad, Operation operation,
 
 Node::Node(NDArray&& data, bool requires_grad, Operation operation,
            std::vector<std::shared_ptr<Node>>&& parents)
-    : data(std::move(data)), grad(NDArray::zeros_like(data)),
+    : data(std::move(data)), grad(NDArray::zeros_like(this->data)),
       requires_grad(requires_grad), operation(operation),
       parents(std::move(parents))
 {
@@ -109,7 +109,7 @@ void Node::backward()
     case Operation::Mean: {
         const std::shared_ptr<Node>& a = parents[0];
         if (a->requires_grad)
-            a->grad += grad * NDArray::ones_like(a->data) / a->grad.size();
+            a->grad += grad * NDArray::ones_like(a->data) / a->data.size();
 
         break;
     }

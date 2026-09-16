@@ -2,6 +2,7 @@
 #define MODULES_HPP
 
 #include "parameter.hpp"
+#include <vector>
 
 // --------------
 // --- MODULE ---
@@ -15,7 +16,14 @@ public:
 
     virtual Tensor forward(const Tensor& x) const = 0;
 
+    std::vector<Tensor> forward(const std::vector<Tensor>& x) const;
+
     inline Tensor operator()(const Tensor& x) const { return forward(x); }
+
+    inline std::vector<Tensor> operator()(const std::vector<Tensor>& x) const
+    {
+        return forward(x);
+    }
 
     virtual ~Module() = default;
 };

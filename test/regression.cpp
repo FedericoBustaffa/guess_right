@@ -4,6 +4,7 @@
 #include "computational_graph.hpp"
 #include "losses.hpp"
 #include "modules.hpp"
+#include "ndarray.hpp"
 #include "optimizer.hpp"
 
 std::vector<Tensor> random(size_t n, const std::vector<size_t>& shape, float mu,
@@ -48,73 +49,84 @@ int main(int argc, const char** argv)
     StochasticGradientDescent sgd(model.parameters(), 1e-2);
     MeanSquaredError loss_fn;
 
-    const size_t batch_size = 32;
-    const size_t n_batches = (x_train.size() + batch_size - 1) / batch_size;
-
+    // tranining loop
     for (size_t e = 0; e < 200; e++)
     {
-        // NDArray epoch_loss = 0.0f;
-        for (size_t i = 0; i < n_batches; i++)
-        {
-            NDArray batch_loss = 0.0f;
-            const size_t batch_start = i * batch_size;
-            const size_t batch_end =
-                std::min(batch_start + batch_size, x_train.size());
-            const size_t actual_batch_size = batch_end - batch_start;
-            sgd.zero_grad();
+        // reset gradients to zero
+        sgd.zero_grad();
 
-            for (size_t j = batch_start; j < batch_end; j++)
-            {
-                // forward pass
-                Tensor pred = model(x_train[j]);
+        // forward pass
+        std::vector<Tensor> pred = model(x_train);
 
-                // compute loss
-                Tensor loss = loss_fn(pred, y_train[j]) / actual_batch_size;
-                batch_loss += loss.item();
+        // compute loss
+        Tensor loss = loss_fn(pred, y_train);
 
-                // compute gradients
-                loss.backward();
-            }
+        // compute gradients
+        loss.backward();
 
-            sgd.step();
-            // epoch_loss += batch_loss;
+        // update parameters
+        sgd.step();
 
-            std::print("epoch {:>4} batch {:>3}/{:<3} loss: {}\r", e + 1, i + 1,
-                       n_batches, batch_loss);
-        }
-        if ((e + 1) % 50 == 0)
-            std::println();
+        std::print("epoch {:>4}  loss: {}\r", e + 1, loss.item());
     }
+    std::println();
 
     {
+        // final error
         NoGrad nograd;
-        NDArray total_loss = 0.0f;
-        for (size_t i = 0; i < x_train.size(); i++)
-        {
-            // forward pass
-            Tensor pred = model(x_train[i]);
 
-            // compute loss
-            Tensor loss = loss_fn(pred, y_train[i]) / x_train.size();
-            total_loss += loss.item();
-        }
-        std::println("final training loss: {}", total_loss);
+        // forward pass
+        std::vector<Tensor> pred = model(x_train);
+
+        // compute loss
+        Tensor loss = loss_fn(pred, y_train);
+        std::println("final training loss: {}", loss.item());
+
+        // forward pass
+        pred = model(x_test);
+
+        // compute loss
+        loss = loss_fn(pred, y_test);
+        std::println("final test loss: {}", loss.item());
     }
 
-    {
-        NoGrad nograd;
-        NDArray total_loss = 0.0f;
-        for (size_t i = 0; i < x_test.size(); i++)
-        {
-            // forward pass
-            Tensor pred = model(x_test[i]);
-
-            // compute loss
-            Tensor loss = loss_fn(pred, y_test[i]) / x_test.size();
-            total_loss += loss.item();
-        }
-        std::println("final test loss: {}", total_loss);
-    }
+    // const size_t batch_size = 32;
+    // const size_t n_batches = (x_train.size() + batch_size - 1) / batch_size;
+    // for (size_t e = 0; e < 200; e++)
+    // {
+    //     // NDArray epoch_loss = 0.0f;
+    //     for (size_t i = 0; i < n_batches; i++)
+    //     {
+    //         NDArray batch_loss = 0.0f;
+    //         const size_t batch_start = i * batch_size;
+    //         const size_t batch_end =
+    //             std::min(batch_start + batch_size, x_train.size());
+    //         const size_t actual_batch_size = batch_end - batch_start;
+    //         sgd.zero_grad();
+    //
+    //         for (size_t j = batch_start; j < batch_end; j++)
+    //         {
+    //             // forward pass
+    //             Tensor pred = model(x_train[j]);
+    //
+    //             // compute loss
+    //             Tensor loss = loss_fn(pred, y_train[j]) / actual_batch_size;
+    //             batch_loss += loss.item();
+    //
+    //             // compute gradients
+    //             loss.backward();
+    //         }
+    //
+    //         sgd.step();
+    //         // epoch_loss += batch_loss;
+    //
+    //         std::print("epoch {:>4} batch {:>3}/{:<3} loss: {}\r", e + 1, i +
+    //         1,
+    //                    n_batches, batch_loss);
+    //     }
+    //     if ((e + 1) % 50 == 0)
+    //         std::println();
+    // }
 
     return 0;
 }

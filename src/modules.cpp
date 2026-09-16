@@ -2,6 +2,17 @@
 
 #include <cmath>
 
+std::vector<Tensor> Module::forward(const std::vector<Tensor>& x) const
+{
+    std::vector<Tensor> out;
+    out.reserve(x.size());
+
+    for (const Tensor& t : x)
+        out.push_back(forward(t));
+
+    return out;
+}
+
 // --------------
 // --- LINEAR ---
 // --------------
