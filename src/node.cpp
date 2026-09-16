@@ -16,14 +16,6 @@ Node::Node(NDArray&& data, bool requires_grad, Operation operation,
 {
 }
 
-NDArray unbroadcast(const NDArray& grad, const NDArray& target)
-{
-    if (target.is_scalar())
-        return sum(grad);
-
-    return grad;
-}
-
 void Node::backward()
 {
     switch (operation)
@@ -44,10 +36,10 @@ void Node::backward()
         const std::shared_ptr<Node>& a = parents[0];
         const std::shared_ptr<Node>& b = parents[1];
         if (a->requires_grad)
-            a->grad += unbroadcast(grad, a->data);
+            a->grad += a->data.is_scalar() ? sum(grad) : grad;
 
         if (b->requires_grad)
-            b->grad += unbroadcast(grad, b->data);
+            b->grad += b->data.is_scalar() ? sum(grad) : grad;
         break;
     }
 
@@ -56,10 +48,10 @@ void Node::backward()
         const std::shared_ptr<Node>& b = parents[1];
 
         if (a->requires_grad)
-            a->grad += unbroadcast(grad, a->data);
+            a->grad += a->data.is_scalar() ? sum(grad) : grad;
 
         if (b->requires_grad)
-            b->grad -= unbroadcast(grad, b->data);
+            b->grad -= b->data.is_scalar() ? sum(grad) : grad;
         break;
     }
 
@@ -68,10 +60,12 @@ void Node::backward()
         const std::shared_ptr<Node>& b = parents[1];
 
         if (a->requires_grad)
-            a->grad += unbroadcast(grad * b->data, a->data);
+            a->grad +=
+                a->data.is_scalar() ? sum(grad * b->data) : grad * b->data;
 
         if (b->requires_grad)
-            b->grad += unbroadcast(grad * a->data, b->data);
+            b->grad +=
+                b->data.is_scalar() ? sum(grad * a->data) : grad * a->data;
         break;
     }
 
@@ -80,11 +74,13 @@ void Node::backward()
         const std::shared_ptr<Node>& b = parents[1];
 
         if (a->requires_grad)
-            a->grad += unbroadcast(grad / b->data, a->data);
+            a->grad +=
+                a->data.is_scalar() ? sum(grad / b->data) : grad / b->data;
 
         if (b->requires_grad)
-            b->grad -=
-                unbroadcast(grad * a->data / pow(b->data, 2.0f), b->data);
+            b->grad -= b->data.is_scalar()
+                           ? sum(grad * a->data / pow(b->data, 2.0f))
+                           : grad * a->data / pow(b->data, 2.0f);
         break;
     }
 
@@ -93,7 +89,6 @@ void Node::backward()
 
         if (a->requires_grad)
             a->grad += grad.transpose();
-
         break;
     }
 
@@ -101,16 +96,14 @@ void Node::backward()
         const std::shared_ptr<Node>& a = parents[0];
 
         if (a->requires_grad)
-            a->grad += grad * NDArray::ones_like(a->data);
-
+            a->grad += grad;
         break;
     }
 
     case Operation::Mean: {
         const std::shared_ptr<Node>& a = parents[0];
         if (a->requires_grad)
-            a->grad += grad * NDArray::ones_like(a->data) / a->data.size();
-
+            a->grad += grad / static_cast<float>(a->data.size());
         break;
     }
 
@@ -119,7 +112,6 @@ void Node::backward()
 
         if (a->requires_grad)
             a->grad += grad * (data / a->data);
-
         break;
     }
 
@@ -132,7 +124,6 @@ void Node::backward()
 
         if (b->requires_grad)
             b->grad += matmul(a->data.transpose(), grad);
-
         break;
     }
 
@@ -141,11 +132,13 @@ void Node::backward()
         const std::shared_ptr<Node>& b = parents[1];
 
         if (a->requires_grad)
-            a->grad += unbroadcast(
-                grad * b->data * pow(a->data, b->data - 1.0f), a->data);
+            a->grad += a->data.is_scalar()
+                           ? sum(grad * b->data * pow(a->data, b->data - 1.0f))
+                           : grad * b->data * pow(a->data, b->data - 1.0f);
 
         if (b->requires_grad)
-            b->grad += unbroadcast(grad * data * log(a->data), b->data);
+            b->grad += b->data.is_scalar() ? sum(grad * data * log(a->data))
+                                           : grad * data * log(a->data);
         break;
     }
 
@@ -153,7 +146,6 @@ void Node::backward()
         const std::shared_ptr<Node>& a = parents[0];
         if (a->requires_grad)
             a->grad += grad / a->data;
-
         break;
     }
 
@@ -161,7 +153,6 @@ void Node::backward()
         const std::shared_ptr<Node>& a = parents[0];
         if (a->requires_grad)
             a->grad += grad * data;
-
         break;
     }
 
@@ -169,7 +160,6 @@ void Node::backward()
         const std::shared_ptr<Node>& a = parents[0];
         if (a->requires_grad)
             a->grad += grad * cos(data);
-
         break;
     }
 
@@ -177,7 +167,6 @@ void Node::backward()
         const std::shared_ptr<Node>& a = parents[0];
         if (a->requires_grad)
             a->grad -= grad * sin(data);
-
         break;
     }
 
@@ -185,7 +174,6 @@ void Node::backward()
         const std::shared_ptr<Node>& a = parents[0];
         if (a->requires_grad)
             a->grad += grad * (1.0f - pow(data, 2.0f));
-
         break;
     }
 
@@ -194,11 +182,12 @@ void Node::backward()
         const std::shared_ptr<Node>& b = parents[1];
 
         if (a->requires_grad)
-            a->grad += unbroadcast(grad * (a->data > b->data), a->data);
+            a->grad += a->data.is_scalar() ? sum(grad * (a->data > b->data))
+                                           : grad * (a->data > b->data);
 
         if (b->requires_grad)
-            b->grad += unbroadcast(grad * (b->data > a->data), b->data);
-
+            b->grad += b->data.is_scalar() ? sum(grad * (b->data > a->data))
+                                           : grad * (b->data > a->data);
         break;
     }
 
@@ -207,11 +196,12 @@ void Node::backward()
         const std::shared_ptr<Node>& b = parents[1];
 
         if (a->requires_grad)
-            a->grad += unbroadcast(grad * (a->data < b->data), a->data);
+            a->grad += a->data.is_scalar() ? sum(grad * (a->data < b->data))
+                                           : grad * (a->data < b->data);
 
         if (b->requires_grad)
-            b->grad += unbroadcast(grad * (b->data < a->data), b->data);
-
+            b->grad += b->data.is_scalar() ? sum(grad * (b->data < a->data))
+                                           : grad * (b->data < a->data);
         break;
     }
     }

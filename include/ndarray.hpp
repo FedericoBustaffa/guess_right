@@ -3,7 +3,6 @@
 
 #include <cstddef>
 #include <format>
-#include <functional>
 #include <random>
 #include <vector>
 
@@ -66,16 +65,14 @@ public:
     ~NDArray();
 
 private:
-    friend NDArray unary_operator(const NDArray& x,
-                                  const std::function<float(float)>& op);
+    template <typename Op>
+    friend NDArray unary_operator(const NDArray& x, Op op);
 
-    friend NDArray binary_operator(
-        const NDArray& a, const NDArray& b,
-        const std::function<float(float, float)>& op);
+    template <typename Op>
+    friend NDArray binary_operator(const NDArray& a, const NDArray& b, Op op);
 
-    friend NDArray& binary_assign_operator(
-        NDArray& a, const NDArray& b,
-        const std::function<float(float, float)>& op);
+    template <typename Op>
+    friend NDArray& binary_assign_operator(NDArray& a, const NDArray& b, Op op);
 
 private:
     float* m_Data;
@@ -164,5 +161,59 @@ struct std::formatter<NDArray>
         return std::format_to(out, "]");
     }
 };
+
+template <typename Op>
+NDArray unary_operator(const NDArray& x, Op op)
+{
+    float* data = new float[x.size()];
+    for (size_t i = 0; i < x.size(); ++i)
+        data[i] = op(x.m_Data[i]);
+
+    return NDArray(data, x.m_Shape);
+}
+
+template <typename Op>
+NDArray binary_operator(const NDArray& a, const NDArray& b, Op op)
+{
+    if (!a.is_scalar() && !b.is_scalar() && a.shape() != b.shape())
+        throw std::invalid_argument(
+            std::format("binary operator shape mismatch: {} and {}\n{}\n{}",
+                        a.shape(), b.shape(), a, b));
+
+    const size_t size = a.is_scalar() ? b.size() : a.size();
+    float* data = new float[size];
+    for (size_t i = 0; i < size; ++i)
+    {
+        const float x = a.is_scalar() ? a.m_Data[0] : a.m_Data[i];
+        const float y = b.is_scalar() ? b.m_Data[0] : b.m_Data[i];
+        data[i] = op(x, y);
+    }
+
+    return NDArray(data, a.is_scalar() ? b.shape() : a.shape());
+}
+
+template <typename Op>
+NDArray& binary_assign_operator(NDArray& a, const NDArray& b, Op op)
+{
+    const bool b_singleton = b.size() == 1;
+
+    if (!b_singleton && a.m_Shape != b.m_Shape)
+        throw std::invalid_argument(std::format(
+            "binary assign operator shape mismatch: {} and {}\n{}\n{}",
+            a.shape(), b.shape(), a, b));
+
+    if (b_singleton)
+    {
+        const float value = *b.m_Data;
+        for (size_t i = 0; i < a.size(); ++i)
+            a.m_Data[i] = op(a.m_Data[i], value);
+        return a;
+    }
+
+    for (size_t i = 0; i < a.size(); ++i)
+        a.m_Data[i] = op(a.m_Data[i], b.m_Data[i]);
+
+    return a;
+}
 
 #endif

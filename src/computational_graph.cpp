@@ -2,7 +2,7 @@
 #include "ndarray.hpp"
 
 #include <functional>
-#include <set>
+#include <unordered_set>
 
 ComputationalGraph ComputationalGraph::s_Instance; // singletone instance
 
@@ -18,7 +18,7 @@ void ComputationalGraph::backward(const std::shared_ptr<Node>& node)
     node->grad = NDArray::ones_like(node->data);
 
     std::vector<std::shared_ptr<Node>> order;
-    std::set<std::shared_ptr<Node>> visited;
+    std::unordered_set<std::shared_ptr<Node>> visited;
 
     std::function<void(const std::shared_ptr<Node>&)> dfs =
         [&](const std::shared_ptr<Node>& current) {
