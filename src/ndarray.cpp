@@ -272,7 +272,7 @@ NDArray mean(const NDArray& a) { return sum(a) / a.size(); }
 
 NDArray product(const NDArray& a)
 {
-    float res = 0.0f;
+    float res = 1.0f;
     for (size_t i = 0; i < a.size(); i++)
         res *= a.m_Data[i];
 

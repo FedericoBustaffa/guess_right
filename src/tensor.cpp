@@ -7,7 +7,6 @@ Tensor::Tensor(const NDArray& data, bool requires_grad)
 {
     m_Node = std::make_shared<Node>(data, requires_grad, Operation::Nop,
                                     std::vector<std::shared_ptr<Node>>{});
-    // ComputationalGraph::add(m_Node);
 }
 
 Tensor::Tensor(const std::shared_ptr<Node>& node) : m_Node(node) {}
@@ -16,7 +15,6 @@ Tensor::Tensor(float data, bool requires_grad)
 {
     m_Node = std::make_shared<Node>(data, requires_grad, Operation::Nop,
                                     std::vector<std::shared_ptr<Node>>{});
-    // ComputationalGraph::add(m_Node);
 }
 
 Tensor::Tensor(NDArray&& data, bool requires_grad)
@@ -24,7 +22,6 @@ Tensor::Tensor(NDArray&& data, bool requires_grad)
     m_Node =
         std::make_shared<Node>(std::move(data), requires_grad, Operation::Nop,
                                std::vector<std::shared_ptr<Node>>{});
-    // ComputationalGraph::add(m_Node);
 }
 
 Tensor::Tensor(const Tensor& other) : m_Node(other.m_Node) {}
@@ -70,16 +67,14 @@ Tensor& binary_assign_operator(
     const std::function<NDArray(const NDArray&, const NDArray&)>& func)
 {
     NDArray data = func(a.item(), b.item());
-    std::shared_ptr<Node> old = a.m_Node;
 
     if (ComputationalGraph::no_grad())
     {
-        a.m_Node =
-            std::make_shared<Node>(std::move(data), false, Operation::Nop,
-                                   std::vector<std::shared_ptr<Node>>{});
+        a.m_Node->data = std::move(data);
         return a;
     }
 
+    std::shared_ptr<Node> old = a.m_Node;
     bool requires_grad = a.requires_grad() || b.requires_grad();
 
     a.m_Node = std::make_shared<Node>(

@@ -34,6 +34,9 @@ struct Node
     Node(const NDArray& data, bool requires_grad, Operation operation,
          std::vector<std::shared_ptr<Node>>&& parents);
 
+    Node(NDArray&& data, bool requires_grad, Operation operation,
+         std::vector<std::shared_ptr<Node>>&& parents);
+
     void backward();
 
     ~Node();

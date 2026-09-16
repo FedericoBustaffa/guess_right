@@ -13,7 +13,16 @@ public:
 
     virtual Tensor forward(const Tensor& predicted, const Tensor& target) = 0;
 
+    virtual Tensor forward(const std::vector<Tensor>& predicted,
+                           const std::vector<Tensor>& target) = 0;
+
     Tensor operator()(const Tensor& predicted, const Tensor& target)
+    {
+        return forward(predicted, target);
+    }
+
+    Tensor operator()(const std::vector<Tensor>& predicted,
+                      const std::vector<Tensor>& target)
     {
         return forward(predicted, target);
     }
@@ -21,20 +30,31 @@ public:
     virtual ~Loss() = default;
 };
 
-// ---------------------
-// --- SQUARED ERROR ---
-// ---------------------
-class SquaredError : public Loss
+// --------------------------
+// --- MEAN SQUARED ERROR ---
+// --------------------------
+class MeanSquaredError : public Loss
 {
 public:
-    SquaredError() = default;
+    MeanSquaredError() = default;
 
     Tensor forward(const Tensor& predicted, const Tensor& target)
     {
-        return sum(pow(predicted - target, 2.0f));
+        return mean(pow(predicted - target, 2.0f));
     }
 
-    ~SquaredError() = default;
+    Tensor forward(const std::vector<Tensor>& predicted,
+                   const std::vector<Tensor>& target)
+    {
+        Tensor loss = 0.0f;
+        const size_t n = predicted.size();
+        for (size_t i = 0; i < n; i++)
+            loss += mean(pow(predicted[i] - target[i], 2.0f)) / n;
+
+        return loss;
+    }
+
+    ~MeanSquaredError() = default;
 };
 
 // ----------------------------
@@ -51,6 +71,17 @@ public:
                     (1 - target) * log(1 - predicted));
     }
 
+    Tensor forward(const std::vector<Tensor>& predicted,
+                   const std::vector<Tensor>& target)
+    {
+        Tensor loss = 0.0f;
+        const size_t n = predicted.size();
+        for (size_t i = 0; i < n; i++)
+            loss += mean(forward(predicted, target)) / n;
+
+        return loss;
+    }
+
     ~BinaryCrossEntropy() = default;
 };
 
@@ -65,6 +96,17 @@ public:
     Tensor forward(const Tensor& predicted, const Tensor& target)
     {
         return -sum(target * log(predicted));
+    }
+
+    Tensor forward(const std::vector<Tensor>& predicted,
+                   const std::vector<Tensor>& target)
+    {
+        Tensor loss = 0.0f;
+        const size_t n = predicted.size();
+        for (size_t i = 0; i < n; i++)
+            loss += mean(forward(predicted, target)) / n;
+
+        return loss;
     }
 
     ~CrossEntropy() = default;

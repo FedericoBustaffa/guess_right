@@ -8,6 +8,14 @@ Node::Node(const NDArray& data, bool requires_grad, Operation operation,
 {
 }
 
+Node::Node(NDArray&& data, bool requires_grad, Operation operation,
+           std::vector<std::shared_ptr<Node>>&& parents)
+    : data(std::move(data)), grad(NDArray::zeros_like(data)),
+      requires_grad(requires_grad), operation(operation),
+      parents(std::move(parents))
+{
+}
+
 NDArray unbroadcast(const NDArray& grad, const NDArray& target)
 {
     if (target.is_scalar())

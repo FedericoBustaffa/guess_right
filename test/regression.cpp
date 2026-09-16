@@ -46,7 +46,7 @@ int main(int argc, const char** argv)
     model.add<Linear>(hidden_dim, output_dim);
 
     StochasticGradientDescent sgd(model.parameters(), 1e-2);
-    SquaredError loss_fn;
+    MeanSquaredError loss_fn;
 
     const size_t batch_size = 32;
     const size_t n_batches = (x_train.size() + batch_size - 1) / batch_size;
