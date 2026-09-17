@@ -17,21 +17,20 @@ void ComputationalGraph::backward(const std::shared_ptr<Node>& node)
 
     node->grad = NDArray::ones_like(node->data);
 
-    std::vector<std::shared_ptr<Node>> order;
-    std::unordered_set<std::shared_ptr<Node>> visited;
+    std::vector<Node*> order;
+    std::unordered_set<Node*> visited;
 
-    std::function<void(const std::shared_ptr<Node>&)> dfs =
-        [&](const std::shared_ptr<Node>& current) {
-            if (!visited.insert(current).second)
-                return;
+    std::function<void(Node*)> dfs = [&](Node* current) {
+        if (!visited.insert(current).second)
+            return;
 
-            for (const std::shared_ptr<Node>& p : current->parents)
-                dfs(p);
+        for (const std::shared_ptr<Node>& p : current->parents)
+            dfs(p.get());
 
-            order.push_back(current);
-        };
+        order.push_back(current);
+    };
 
-    dfs(node);
+    dfs(node.get());
 
     for (auto it = order.rbegin(); it != order.rend(); ++it)
         (*it)->backward();

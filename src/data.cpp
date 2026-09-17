@@ -33,7 +33,9 @@ Loader::Loader(const Dataset& dataset, size_t batch_size, bool shuffle)
 Dataset Loader::get()
 {
     std::vector<Tensor> x;
+    x.reserve(m_BatchSize);
     std::vector<Tensor> y;
+    y.reserve(m_BatchSize);
 
     const size_t batch_end =
         std::min(m_Current + m_BatchSize, m_Dataset.size());
@@ -47,5 +49,5 @@ Dataset Loader::get()
     if (m_Current >= batch_end)
         m_Current = 0;
 
-    return Dataset(x, y);
+    return Dataset(std::move(x), std::move(y));
 }
