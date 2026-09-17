@@ -17,7 +17,7 @@ std::vector<Tensor> Module::forward(const std::vector<Tensor>& x) const
 // --- LINEAR ---
 // --------------
 Linear::Linear(size_t in_features, size_t out_features)
-    : w(NDArray::normal({in_features, out_features}, 0.0f,
+    : w(NDArray::normal({out_features, in_features}, 0.0f,
                         std::sqrt(2.0f / in_features)),
         true, 1.0f),
       b(NDArray::zeros({out_features}), true, 0.0f)
@@ -26,10 +26,7 @@ Linear::Linear(size_t in_features, size_t out_features)
 
 std::vector<Parameter> Linear::parameters() const { return {w, b}; }
 
-Tensor Linear::forward(const Tensor& x) const
-{
-    return matmul(w.transpose(), x) + b;
-}
+Tensor Linear::forward(const Tensor& x) const { return matmul(w, x) + b; }
 
 // ----------------
 // --- RESIDUAL ---

@@ -40,7 +40,7 @@ public:
 
     Tensor forward(const Tensor& predicted, const Tensor& target)
     {
-        return mean(pow(predicted - target, 2.0f));
+        return mean((predicted - target) * (predicted - target));
     }
 
     Tensor forward(const std::vector<Tensor>& predicted,
@@ -49,9 +49,10 @@ public:
         Tensor loss = 0.0f;
         const size_t n = predicted.size();
         for (size_t i = 0; i < n; i++)
-            loss += mean(pow(predicted[i] - target[i], 2.0f)) / n;
+            loss +=
+                mean((predicted[i] - target[i]) * (predicted[i] - target[i]));
 
-        return loss;
+        return loss / n;
     }
 
     ~MeanSquaredError() = default;

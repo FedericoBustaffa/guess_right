@@ -26,7 +26,7 @@ int main(int argc, const char** argv)
     NDArray intercept = NDArray::normal({output_dim}, 2, 0.1);
 
     // training set
-    std::vector<Tensor> x_train = random(128, {input_dim}, 0, 1);
+    std::vector<Tensor> x_train = random(256, {input_dim}, 0, 1);
     std::vector<Tensor> y_train;
     for (size_t i = 0; i < x_train.size(); i++)
         y_train.push_back(matmul(slope.transpose(), x_train[i]) + intercept);
@@ -42,7 +42,7 @@ int main(int argc, const char** argv)
 
     // model definition
     Sequential model;
-    size_t hidden_dim = 32;
+    size_t hidden_dim = 64;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<ReLU>();
     model.add<Linear>(hidden_dim, hidden_dim);
