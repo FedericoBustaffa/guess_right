@@ -1,3 +1,5 @@
+#include <chrono>
+#include <cstdlib>
 #include <print>
 
 #include "activations.hpp"
@@ -43,7 +45,7 @@ int main(int argc, const char** argv)
 
     // model definition
     Sequential model;
-    size_t hidden_dim = 16;
+    size_t hidden_dim = 32;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<ReLU>();
     model.add<Linear>(hidden_dim, hidden_dim);
@@ -54,6 +56,17 @@ int main(int argc, const char** argv)
     MeanSquaredError loss_fn;
 
     // tranining loop
+    auto training_start = std::chrono::high_resolution_clock::now();
+    double forward_time = 0.0;
+    double backpropagation_time = 0.0;
+    double sgd_time = 0.0;
+
+    std::vector<float> train_history;
+    train_history.reserve(200);
+
+    std::vector<float> test_history;
+    test_history.reserve(200);
+
     for (size_t e = 0; e < 200; e++)
     {
         for (size_t i = 0; i < train_loader.size(); i++)
@@ -67,22 +80,61 @@ int main(int argc, const char** argv)
             sgd.zero_grad();
 
             // forward pass
+            auto forward_start = std::chrono::high_resolution_clock::now();
             std::vector<Tensor> pred = model(x_batch);
+            auto forward_end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> forward_duration =
+                forward_end - forward_start;
+            forward_time += forward_duration.count();
 
             // compute loss
             Tensor loss = loss_fn(pred, y_batch);
 
             // compute gradients
+            auto backward_start = std::chrono::high_resolution_clock::now();
             loss.backward();
+            auto backward_end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> backward_duration =
+                backward_end - backward_start;
+            backpropagation_time += backward_duration.count();
 
             // update parameters
+            auto sgd_start = std::chrono::high_resolution_clock::now();
             sgd.step();
+            auto sgd_end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> sgd_duration = sgd_end - sgd_start;
+            sgd_time += sgd_duration.count();
 
             std::print("epoch {:>4}, batch {}/{},  loss: {}\r", e + 1, i + 1,
                        train_loader.size(), loss.item());
         }
-        std::println();
+        if ((e + 1) % 50 == 0)
+            std::println();
+
+        {
+            NoGrad guard;
+
+            Tensor train_loss = loss_fn(model(x_train), y_train);
+            train_history.push_back((float)train_loss.item());
+
+            Tensor test_loss = loss_fn(model(x_test), y_test);
+            test_history.push_back((float)test_loss.item());
+        }
     }
+
+    // benchmark results
+    auto training_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> trainining_duration =
+        training_end - training_start;
+    double training_time = trainining_duration.count();
+    std::print("training time: {:.4f} seconds\n", training_time);
+    std::print("forward time: {:.4f} seconds -> {:.2f}\%\n", forward_time,
+               forward_time / training_time * 100.0);
+    std::print("backward time: {:.4f} seconds -> {:.2f}\%\n",
+               backpropagation_time,
+               backpropagation_time / training_time * 100.0);
+    std::print("optimizer time: {:.4f} seconds -> {:.2f}\%\n", sgd_time,
+               sgd_time / training_time * 100.0);
 
     // testing
     {

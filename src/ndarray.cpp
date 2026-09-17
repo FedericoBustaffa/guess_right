@@ -111,6 +111,14 @@ NDArray& NDArray::operator=(NDArray&& other) noexcept
     return *this;
 }
 
+NDArray::operator float() const
+{
+    if (!is_scalar())
+        throw std::logic_error("NDArray: cannot convert non-scalar to float");
+
+    return m_Data[0];
+}
+
 NDArray NDArray::operator-() const
 {
 
@@ -247,6 +255,7 @@ NDArray matmul(const NDArray& a, const NDArray& b)
                 data[i * cols + j] += aik * b.m_Data[k * cols + j];
         }
     }
+
     return NDArray(data, {rows, cols});
 }
 

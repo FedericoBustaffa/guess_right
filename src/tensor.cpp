@@ -33,11 +33,11 @@ void Tensor::backward() { ComputationalGraph::backward(m_Node); }
 Tensor unary_operator(const Tensor& a, Operation operation,
                       const std::function<NDArray(const NDArray&)>& func)
 {
-    NDArray data = func(a.item());
 
     if (ComputationalGraph::no_grad())
-        return Tensor(std::move(data), false);
+        return Tensor(func(a.item()), false);
 
+    NDArray data = func(a.item());
     std::shared_ptr<Node> node =
         std::make_shared<Node>(std::move(data), a.requires_grad(), operation,
                                std::vector<std::shared_ptr<Node>>{a.m_Node});
@@ -49,11 +49,10 @@ Tensor binary_operator(
     const Tensor& a, const Tensor& b, Operation operation,
     const std::function<NDArray(const NDArray&, const NDArray&)>& func)
 {
-    NDArray data = func(a.item(), b.item());
-
     if (ComputationalGraph::no_grad())
-        return Tensor(std::move(data), false);
+        return Tensor(func(a.item(), b.item()), false);
 
+    NDArray data = func(a.item(), b.item());
     bool requires_grad = a.requires_grad() || b.requires_grad();
     std::shared_ptr<Node> node = std::make_shared<Node>(
         std::move(data), requires_grad, operation,
@@ -66,14 +65,14 @@ Tensor& binary_assign_operator(
     Tensor& a, const Tensor& b, Operation operation,
     const std::function<NDArray(const NDArray&, const NDArray&)>& func)
 {
-    NDArray data = func(a.item(), b.item());
 
     if (ComputationalGraph::no_grad())
     {
-        a.m_Node->data = std::move(data);
+        a.m_Node->data = func(a.item(), b.item());
         return a;
     }
 
+    NDArray data = func(a.item(), b.item());
     std::shared_ptr<Node> old = a.m_Node;
     bool requires_grad = a.requires_grad() || b.requires_grad();
 

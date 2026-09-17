@@ -21,6 +21,8 @@ public:
     inline size_t size() const { return m_Size; }
     inline bool is_scalar() const { return m_Shape[0] == 1 && m_Shape[1] == 1; }
 
+    explicit operator float() const;
+
     //  Operators
     NDArray operator-() const;
     friend NDArray operator+(const NDArray& a, const NDArray& b);
