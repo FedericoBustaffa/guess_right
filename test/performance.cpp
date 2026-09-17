@@ -45,7 +45,7 @@ int main(int argc, const char** argv)
 
     // model definition
     Sequential model;
-    size_t hidden_dim = 32;
+    size_t hidden_dim = 64;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<ReLU>();
     model.add<Linear>(hidden_dim, hidden_dim);
