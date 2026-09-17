@@ -88,10 +88,10 @@ public:
 // -------------------------------
 // --- NEGATIVE LOG-LIKELIHOOD ---
 // -------------------------------
-class NegativeLogLikelihood : public Loss
+class CrossEntropy : public Loss
 {
 public:
-    NegativeLogLikelihood() = default;
+    CrossEntropy() = default;
 
     Tensor forward(const Tensor& predicted, const Tensor& target)
     {
@@ -109,7 +109,7 @@ public:
         return loss;
     }
 
-    ~NegativeLogLikelihood() = default;
+    ~CrossEntropy() = default;
 };
 
 #endif
