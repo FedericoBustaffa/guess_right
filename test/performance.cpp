@@ -44,7 +44,7 @@ int main(int argc, const char** argv)
     Loader test_loader(test, 32, false);
 
     // model definition
-    Sequential model;
+    Model model;
     size_t hidden_dim = 64;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<ReLU>();
@@ -139,38 +139,21 @@ int main(int argc, const char** argv)
     // benchmark results
     std::print("training time: {:.4f} seconds\n", training_time);
 
-    std::print("loader time: {:.4f} seconds -> {:.2f}\%\n", loader_time,
+    std::print("loader time: {:.4f} seconds -> {:.2f}%\n", loader_time,
                loader_time / training_time * 100.0);
 
-    std::print("forward time: {:.4f} seconds -> {:.2f}\%\n", forward_time,
+    std::print("forward time: {:.4f} seconds -> {:.2f}%\n", forward_time,
                forward_time / training_time * 100.0);
 
-    std::print("backward time: {:.4f} seconds -> {:.2f}\%\n",
+    std::print("backward time: {:.4f} seconds -> {:.2f}%\n",
                backpropagation_time,
                backpropagation_time / training_time * 100.0);
 
-    std::print("optimizer time: {:.4f} seconds -> {:.2f}\%\n", sgd_time,
+    std::print("optimizer time: {:.4f} seconds -> {:.2f}%\n", sgd_time,
                sgd_time / training_time * 100.0);
 
-    // testing
-    {
-        // final error
-        NoGrad nograd;
-
-        // forward pass
-        std::vector<Tensor> pred = model(x_train);
-
-        // compute loss
-        Tensor loss = loss_fn(pred, y_train);
-        std::println("final training loss: {}", loss.item());
-
-        // forward pass
-        pred = model(x_test);
-
-        // compute loss
-        loss = loss_fn(pred, y_test);
-        std::println("final test loss: {}", loss.item());
-    }
+    std::println("final training loss: {:>6.4f}", train_history.back());
+    std::println("final test loss: {:>6.4f}", test_history.back());
 
     return 0;
 }

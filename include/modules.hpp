@@ -75,13 +75,13 @@ private:
     std::vector<std::shared_ptr<Module>> m_Modules;
 };
 
-// ------------------
-// --- SEQUENTIAL ---
-// ------------------
-class Sequential : public Module
+// -------------
+// --- MODEL ---
+// -------------
+class Model : public Module
 {
 public:
-    Sequential() = default;
+    Model() = default;
 
     Tensor forward(const Tensor& x) const override;
 

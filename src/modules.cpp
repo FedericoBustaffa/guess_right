@@ -54,10 +54,10 @@ std::vector<Parameter> Residual::parameters() const
     return params;
 }
 
-// ------------------
-// --- SEQUENTIAL ---
-// ------------------
-Tensor Sequential::forward(const Tensor& x) const
+// -------------
+// --- MODEL ---
+// -------------
+Tensor Model::forward(const Tensor& x) const
 {
     Tensor out = x;
     for (const auto& module : m_Modules)
@@ -66,7 +66,7 @@ Tensor Sequential::forward(const Tensor& x) const
     return out;
 }
 
-std::vector<Parameter> Sequential::parameters() const
+std::vector<Parameter> Model::parameters() const
 {
     std::vector<Parameter> params;
 

@@ -26,7 +26,7 @@ int main(int argc, const char** argv)
     y.emplace_back(NDArray(1.0f), false);
     y.emplace_back(NDArray(0.0f), false);
 
-    Sequential model;
+    Model model;
     const size_t hidden_dim = 8;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<LeakyReLU>();

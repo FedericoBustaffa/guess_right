@@ -41,7 +41,7 @@ int main(int argc, const char** argv)
     Dataset test(x_test, y_test);
 
     // model definition
-    Sequential model;
+    Model model;
     size_t hidden_dim = 64;
     model.add<Linear>(input_dim, hidden_dim);
     model.add<ReLU>();
@@ -91,7 +91,8 @@ int main(int argc, const char** argv)
         if ((e + 1) % 50 == 0)
             std::println();
 
-        { // final prediction on the full dataset and loss history recording
+        {
+            // final prediction on the full dataset and loss history recording
             NoGrad guard;
 
             Tensor train_loss = loss_fn(model(x_train), y_train);
