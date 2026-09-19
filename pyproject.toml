@@ -1,0 +1,35 @@
+[project]
+name = "guess_right"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "FedericoBustaffa", email = "kiko.bustaffa@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+cmake.args = ["-G", "Unix Makefiles"]
+build-dir = "build/"
+
+[tool.uv]
+no-build-isolation-package = ["guess_right"]
+cache-keys = [{ file = "pyproject.toml" }, 
+{ file = "src/**/*.{cpp}" },  
+{ file = "guess_right/bindings.cpp" },  
+{  file = "include/**/*.{hpp}" },
+{ file = "CMakeLists.txt" }]
+
+[build-system]
+requires = ["scikit-build-core>=0.12", "pybind11>=3"]
+build-backend = "scikit_build_core.build"
+
+[dependency-groups]
+dev = [
+    "pybind11>=3.1.0",
+    "pybind11-stubgen>=2.5.5",
+    "scikit-build-core>=1.0.3",
+]
+
