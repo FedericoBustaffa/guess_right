@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from guess_right.core import (
     BinaryCrossEntropy,
     CrossEntropy,
@@ -36,26 +38,9 @@ from guess_right.core import (
     tanh,
 )
 
+from . import core
 
-class no_grad:
-    """Context manager equivalente alla guardia RAII NoGrad del C++.
-
-    Esempio:
-        with guess_right.no_grad():
-            prediction = model(x)
-    """
-
-    def __enter__(self) -> "no_grad":
-        self._previous = _no_grad_enabled()
-        _set_no_grad(True)
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback) -> bool:
-        _set_no_grad(self._previous)
-        return False
-
-
-__all__ = [
+__all__: list = [
     "Tensor",
     "Parameter",
     "Module",
@@ -91,3 +76,15 @@ __all__ = [
     "round",
     "no_grad",
 ]
+
+class no_grad:
+    """
+    Context manager equivalente alla guardia RAII NoGrad del C++.
+
+        Esempio:
+            with guess_right.no_grad():
+                prediction = model(x)
+
+    """
+    def __enter__(self) -> no_grad: ...
+    def __exit__(self, exc_type, exc_value, traceback) -> bool: ...

@@ -7,20 +7,25 @@ authors = [
     { name = "FedericoBustaffa", email = "kiko.bustaffa@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "matplotlib>=3.11.2",
+    "numpy",
+    "pyqt6>=6.11.0",
+]
 
 [tool.scikit-build]
 minimum-version = "build-system.requires"
-cmake.args = ["-G", "Unix Makefiles"]
-build-dir = "build/"
+build-dir = "build"
+build.verbose = true
 
 [tool.uv]
-no-build-isolation-package = ["guess_right"]
+# no-build-isolation-package = ["guess_right"]
 cache-keys = [{ file = "pyproject.toml" }, 
 { file = "src/**/*.{cpp}" },  
 { file = "guess_right/bindings.cpp" },  
 {  file = "include/**/*.{hpp}" },
 { file = "CMakeLists.txt" }]
+no-build-isolation-package = ["guess_right"]
 
 [build-system]
 requires = ["scikit-build-core>=0.12", "pybind11>=3"]
