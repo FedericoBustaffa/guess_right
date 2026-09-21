@@ -45,7 +45,6 @@ def plot_results(
     ax_loss.legend()
 
     fig.tight_layout()
-    fig.savefig(output_path)
     plt.show()
     print(f"plot salvato in {output_path}")
 
@@ -77,8 +76,6 @@ def main() -> None:
     model = gr.Model()
     hidden_dim = 64
     model.add_linear(input_dim, hidden_dim)
-    model.add_relu()
-    model.add_linear(hidden_dim, hidden_dim)
     model.add_relu()
     model.add_linear(hidden_dim, output_dim)
 
