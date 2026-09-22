@@ -27,7 +27,7 @@ def plot_results(
     y_true_sorted = [y_true_vals[i] for i in order]
     y_pred_sorted = [y_pred_vals[i] for i in order]
 
-    fig, (ax_reg, ax_loss) = plt.subplots(1, 2, figsize=(8, 4), dpi=200)
+    fig, (ax_reg, ax_loss) = plt.subplots(1, 2, figsize=(8, 4), dpi=150)
 
     ax_reg.scatter(x_sorted, y_true_sorted, label="target", alpha=0.7)
     ax_reg.plot(x_sorted, y_pred_sorted, color="tab:red", label="predizione")
