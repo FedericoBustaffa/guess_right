@@ -15,7 +15,6 @@ def plot_results(
     y_pred: list[gr.Tensor],
     train_history: list[float],
     test_history: list[float],
-    output_path: Path,
 ) -> None:
     # funziona solo per input_dim == output_dim == 1 (Tensor scalari -> .item())
     x_vals = [t.item() for t in x_test]
@@ -139,7 +138,6 @@ def main() -> None:
         y_pred_test,
         train_history,
         test_history,
-        Path(__file__).parent / "regression_plot.png",
     )
 
 
