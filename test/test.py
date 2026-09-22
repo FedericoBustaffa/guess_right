@@ -27,7 +27,7 @@ def plot_results(
     y_true_sorted = [y_true_vals[i] for i in order]
     y_pred_sorted = [y_pred_vals[i] for i in order]
 
-    fig, (ax_reg, ax_loss) = plt.subplots(1, 2, figsize=(8, 4), dpi=150)
+    fig, (ax_reg, ax_loss) = plt.subplots(1, 2, figsize=(12, 5), dpi=150)
 
     ax_reg.scatter(x_sorted, y_true_sorted, label="target", alpha=0.7)
     ax_reg.plot(x_sorted, y_pred_sorted, color="tab:red", label="predizione")
@@ -52,6 +52,8 @@ def main() -> None:
     input_dim = 1
     output_dim = 1
 
+    gr.Tensor.seed(0)
+
     slope = gr.Tensor.normal([input_dim, output_dim], 1, 1)
     intercept = gr.Tensor.normal([output_dim], 2, 0.1)
 
@@ -62,7 +64,7 @@ def main() -> None:
         for x in x_train
     ]
     train = gr.Dataset(x_train, y_train)
-    train_loader = gr.Loader(train, 32, False)
+    train_loader = gr.Loader(train, 64, False)
 
     # test set
     x_test = random_batch(32, [input_dim], 0, 2)
@@ -73,7 +75,7 @@ def main() -> None:
 
     # definizione del modello
     model = gr.Model()
-    hidden_dim = 64
+    hidden_dim = 32
     model.add_linear(input_dim, hidden_dim)
     model.add_relu()
     model.add_linear(hidden_dim, output_dim)
@@ -81,7 +83,7 @@ def main() -> None:
     sgd = gr.StochasticGradientDescent(model.parameters(), 1e-3)
     loss_fn = gr.MeanSquaredError()
 
-    max_epochs = 200
+    max_epochs = 500
     train_history: list[float] = []
     test_history: list[float] = []
 
