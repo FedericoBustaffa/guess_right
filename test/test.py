@@ -46,7 +46,6 @@ def plot_results(
 
     fig.tight_layout()
     plt.show()
-    print(f"plot salvato in {output_path}")
 
 
 def main() -> None:
