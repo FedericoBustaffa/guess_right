@@ -1,9 +1,9 @@
 #include "metrics.hpp"
 
-NDArray accuracy_score(const std::vector<Tensor>& predicted,
-                       const std::vector<Tensor>& target)
+Matrix accuracy_score(const std::vector<Tensor>& predicted,
+                      const std::vector<Tensor>& target)
 {
-    NDArray right = 0;
+    Matrix right = 0;
     for (size_t i = 0; i < predicted.size(); i++)
         right += sum(predicted[i].item() == target[i].item());
 

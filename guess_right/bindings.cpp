@@ -11,9 +11,9 @@
 #include "computational_graph.hpp"
 #include "data.hpp"
 #include "losses.hpp"
+#include "matrix.hpp"
 #include "metrics.hpp"
 #include "modules.hpp"
-#include "ndarray.hpp"
 #include "optimizer.hpp"
 #include "parameter.hpp"
 #include "tensor.hpp"
@@ -21,14 +21,14 @@
 namespace py = pybind11;
 
 // ---------------------------------------------------------------------
-// Conversioni NDArray <-> Python. NDArray non viene mai esposta: da qui
+// Conversioni Matrix <-> Python. Matrix non viene mai esposta: da qui
 // in poi tutto quello che arriva/parte verso Python e' un float, una
 // lista o un numpy.ndarray. Sempre copiato, mai vista sulla memoria.
 // ---------------------------------------------------------------------
 namespace
 {
 
-NDArray ndarray_from_pylist(const py::sequence& seq)
+Matrix matrix_from_pylist(const py::sequence& seq)
 {
     if (seq.size() == 0)
         throw std::invalid_argument(
@@ -44,7 +44,7 @@ NDArray ndarray_from_pylist(const py::sequence& seq)
         for (const auto& item : seq)
             data.push_back(item.cast<float>());
 
-        return NDArray(data, {data.size()});
+        return Matrix(data, {data.size()});
     }
 
     const size_t rows = seq.size();
@@ -64,10 +64,10 @@ NDArray ndarray_from_pylist(const py::sequence& seq)
             data.push_back(value.cast<float>());
     }
 
-    return NDArray(data, {rows, cols});
+    return Matrix(data, {rows, cols});
 }
 
-NDArray ndarray_from_python(const py::object& obj)
+Matrix matrix_from_python(const py::object& obj)
 {
     // numpy array (qualunque dtype numerico, forzato a float32)
     if (py::isinstance<py::array>(obj))
@@ -76,19 +76,19 @@ NDArray ndarray_from_python(const py::object& obj)
             py::array_t<float, py::array::c_style | py::array::forcecast>>(obj);
 
         if (arr.ndim() == 0)
-            return NDArray(*arr.data());
+            return Matrix(*arr.data());
 
         if (arr.ndim() == 1)
         {
             std::vector<float> data(arr.data(), arr.data() + arr.shape(0));
-            return NDArray(data, {static_cast<size_t>(arr.shape(0))});
+            return Matrix(data, {static_cast<size_t>(arr.shape(0))});
         }
 
         if (arr.ndim() == 2)
         {
             std::vector<float> data(arr.data(), arr.data() + arr.size());
-            return NDArray(data, {static_cast<size_t>(arr.shape(0)),
-                                  static_cast<size_t>(arr.shape(1))});
+            return Matrix(data, {static_cast<size_t>(arr.shape(0)),
+                                 static_cast<size_t>(arr.shape(1))});
         }
 
         throw std::invalid_argument("sono supportati solo array numpy 1D o 2D");
@@ -96,12 +96,12 @@ NDArray ndarray_from_python(const py::object& obj)
 
     // lista / tupla
     if (py::isinstance<py::sequence>(obj) && !py::isinstance<py::str>(obj))
-        return ndarray_from_pylist(py::cast<py::sequence>(obj));
+        return matrix_from_pylist(py::cast<py::sequence>(obj));
 
     // scalare (python int/float, numpy scalar, ...)
     try
     {
-        return NDArray(obj.cast<float>());
+        return Matrix(obj.cast<float>());
     }
     catch (const py::cast_error&)
     {
@@ -111,7 +111,7 @@ NDArray ndarray_from_python(const py::object& obj)
     }
 }
 
-py::array_t<float> ndarray_to_numpy(const NDArray& array)
+py::array_t<float> matrix_to_numpy(const Matrix& array)
 {
     std::vector<py::ssize_t> shape = {
         static_cast<py::ssize_t>(array.shape()[0]),
@@ -138,7 +138,7 @@ PYBIND11_MODULE(core, m)
                  if (py::isinstance<Tensor>(data))
                      return data.cast<Tensor>();
 
-                 return Tensor(ndarray_from_python(data), requires_grad);
+                 return Tensor(matrix_from_python(data), requires_grad);
              }),
              py::arg("data"), py::arg("requires_grad") = false)
 
@@ -152,15 +152,14 @@ PYBIND11_MODULE(core, m)
         .def_property_readonly("size", &Tensor::size)
         .def_property_readonly("is_scalar", &Tensor::is_scalar)
         .def_property_readonly("requires_grad", &Tensor::requires_grad)
-        .def_property_readonly("grad",
-                               [](const Tensor& self) {
-                                   return ndarray_to_numpy(self.gradient());
-                               })
+        .def_property_readonly(
+            "grad",
+            [](const Tensor& self) { return matrix_to_numpy(self.gradient()); })
         .def_property_readonly("T", &Tensor::transpose)
 
         // --- conversioni verso Python ---
         .def("numpy",
-             [](const Tensor& self) { return ndarray_to_numpy(self.item()); })
+             [](const Tensor& self) { return matrix_to_numpy(self.item()); })
         .def("item",
              [](const Tensor& self) -> float {
                  if (!self.is_scalar())
@@ -247,7 +246,7 @@ PYBIND11_MODULE(core, m)
     py::class_<Parameter, Tensor>(m, "Parameter")
         .def(py::init(
                  [](py::object data, bool requires_grad, float weight_decay) {
-                     return Parameter(ndarray_from_python(data), requires_grad,
+                     return Parameter(matrix_from_python(data), requires_grad,
                                       weight_decay);
                  }),
              py::arg("data"), py::arg("requires_grad") = true,

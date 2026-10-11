@@ -1,4 +1,4 @@
-#include "ndarray.hpp"
+#include "matrix.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -20,13 +20,13 @@ size_t size_from_shape(const std::vector<size_t>& shape)
     return size;
 }
 
-NDArray::NDArray(float data) : m_Shape({1, 1}), m_Size(1)
+Matrix::Matrix(float data) : m_Shape({1, 1}), m_Size(1)
 {
     m_Data = new float[1];
     *m_Data = data;
 }
 
-NDArray::NDArray(float* data, const std::vector<size_t>& shape)
+Matrix::Matrix(float* data, const std::vector<size_t>& shape)
     : m_Data(data), m_Size(size_from_shape(shape))
 {
     if (data == nullptr)
@@ -46,8 +46,7 @@ NDArray::NDArray(float* data, const std::vector<size_t>& shape)
         m_Shape = shape;
 }
 
-NDArray::NDArray(const std::vector<float>& data,
-                 const std::vector<size_t>& shape)
+Matrix::Matrix(const std::vector<float>& data, const std::vector<size_t>& shape)
     : m_Data(nullptr), m_Size(size_from_shape(shape))
 {
     m_Data = new float[m_Size];
@@ -61,14 +60,14 @@ NDArray::NDArray(const std::vector<float>& data,
         m_Shape = shape;
 }
 
-NDArray::NDArray(const NDArray& other)
+Matrix::Matrix(const Matrix& other)
     : m_Shape(other.m_Shape), m_Size(other.m_Size)
 {
     m_Data = new float[other.size()];
     std::copy(other.m_Data, other.m_Data + other.size(), m_Data);
 }
 
-NDArray::NDArray(NDArray&& other)
+Matrix::Matrix(Matrix&& other)
     : m_Data(other.m_Data), m_Shape(std::move(other.m_Shape)),
       m_Size(other.m_Size)
 {
@@ -76,7 +75,7 @@ NDArray::NDArray(NDArray&& other)
     other.m_Size = 0;
 }
 
-NDArray& NDArray::operator=(const NDArray& other)
+Matrix& Matrix::operator=(const Matrix& other)
 {
     if (this == &other)
         return *this;
@@ -94,7 +93,7 @@ NDArray& NDArray::operator=(const NDArray& other)
     return *this;
 }
 
-NDArray& NDArray::operator=(NDArray&& other) noexcept
+Matrix& Matrix::operator=(Matrix&& other) noexcept
 {
     if (this == &other)
         return *this;
@@ -111,95 +110,95 @@ NDArray& NDArray::operator=(NDArray&& other) noexcept
     return *this;
 }
 
-NDArray::operator float() const
+Matrix::operator float() const
 {
     if (!is_scalar())
-        throw std::logic_error("NDArray: cannot convert non-scalar to float");
+        throw std::logic_error("Matrix: cannot convert non-scalar to float");
 
     return m_Data[0];
 }
 
-NDArray NDArray::operator-() const
+Matrix Matrix::operator-() const
 {
 
     return unary_operator(*this, [](float x) { return -x; });
 }
 
-NDArray operator+(const NDArray& a, const NDArray& b)
+Matrix operator+(const Matrix& a, const Matrix& b)
 {
     return binary_operator(a, b, [](float a, float b) { return a + b; });
 }
 
-NDArray operator-(const NDArray& a, const NDArray& b)
+Matrix operator-(const Matrix& a, const Matrix& b)
 {
     return binary_operator(a, b, [](float a, float b) { return a - b; });
 }
 
-NDArray operator*(const NDArray& a, const NDArray& b)
+Matrix operator*(const Matrix& a, const Matrix& b)
 {
     return binary_operator(a, b, [](float a, float b) { return a * b; });
 }
 
-NDArray operator/(const NDArray& a, const NDArray& b)
+Matrix operator/(const Matrix& a, const Matrix& b)
 {
     return binary_operator(a, b, [](float a, float b) { return a / b; });
 }
 
-NDArray& NDArray::operator+=(const NDArray& other)
+Matrix& Matrix::operator+=(const Matrix& other)
 {
     return binary_assign_operator(*this, other,
                                   [](float a, float b) { return a + b; });
 }
 
-NDArray& NDArray::operator-=(const NDArray& other)
+Matrix& Matrix::operator-=(const Matrix& other)
 {
     return binary_assign_operator(*this, other,
                                   [](float a, float b) { return a - b; });
 }
 
-NDArray& NDArray::operator*=(const NDArray& other)
+Matrix& Matrix::operator*=(const Matrix& other)
 {
     return binary_assign_operator(*this, other,
                                   [](float a, float b) { return a * b; });
 }
 
-NDArray& NDArray::operator/=(const NDArray& other)
+Matrix& Matrix::operator/=(const Matrix& other)
 {
     return binary_assign_operator(*this, other,
                                   [](float a, float b) { return a / b; });
 }
 
-NDArray operator<(const NDArray& a, const NDArray& b)
+Matrix operator<(const Matrix& a, const Matrix& b)
 {
     return binary_operator(
         a, b, [](float a, float b) { return a < b ? 1.0f : 0.0f; });
 }
 
-NDArray operator<=(const NDArray& a, const NDArray& b)
+Matrix operator<=(const Matrix& a, const Matrix& b)
 {
     return binary_operator(
         a, b, [](float a, float b) { return a <= b ? 1.0f : 0.0f; });
 }
 
-NDArray operator==(const NDArray& a, const NDArray& b)
+Matrix operator==(const Matrix& a, const Matrix& b)
 {
     return binary_operator(
         a, b, [](float a, float b) { return a == b ? 1.0f : 0.0f; });
 }
 
-NDArray operator>=(const NDArray& a, const NDArray& b)
+Matrix operator>=(const Matrix& a, const Matrix& b)
 {
     return binary_operator(
         a, b, [](float a, float b) { return a >= b ? 1.0f : 0.0f; });
 }
 
-NDArray operator>(const NDArray& a, const NDArray& b)
+Matrix operator>(const Matrix& a, const Matrix& b)
 {
     return binary_operator(
         a, b, [](float a, float b) { return a > b ? 1.0f : 0.0f; });
 }
 
-NDArray NDArray::transpose() const
+Matrix Matrix::transpose() const
 {
     if (this->ndim() != 2)
         return *this;
@@ -212,30 +211,30 @@ NDArray NDArray::transpose() const
         for (size_t j = 0; j < cols; j++)
             data[j * rows + i] = m_Data[i * cols + j];
 
-    return NDArray(data, {m_Shape[1], m_Shape[0]});
+    return Matrix(data, {m_Shape[1], m_Shape[0]});
 }
 
-NDArray sum(const NDArray& a)
+Matrix sum(const Matrix& a)
 {
     float res = 0.0f;
     for (size_t i = 0; i < a.size(); i++)
         res += a.m_Data[i];
 
-    return NDArray(res);
+    return Matrix(res);
 }
 
-NDArray mean(const NDArray& a) { return sum(a) / a.size(); }
+Matrix mean(const Matrix& a) { return sum(a) / a.size(); }
 
-NDArray product(const NDArray& a)
+Matrix product(const Matrix& a)
 {
     float res = 1.0f;
     for (size_t i = 0; i < a.size(); i++)
         res *= a.m_Data[i];
 
-    return NDArray(res);
+    return Matrix(res);
 }
 
-NDArray matmul(const NDArray& a, const NDArray& b)
+Matrix matmul(const Matrix& a, const Matrix& b)
 {
     const size_t rows = a.shape()[0];
     const size_t inner = a.shape()[1];
@@ -256,106 +255,106 @@ NDArray matmul(const NDArray& a, const NDArray& b)
         }
     }
 
-    return NDArray(data, {rows, cols});
+    return Matrix(data, {rows, cols});
 }
 
-NDArray pow(const NDArray& x, const NDArray& e)
+Matrix pow(const Matrix& x, const Matrix& e)
 {
     return binary_operator(x, e,
                            [](float a, float b) { return std::pow(a, b); });
 }
 
-NDArray abs(const NDArray& x)
+Matrix abs(const Matrix& x)
 {
     return unary_operator(x, [](float a) { return std::abs(a); });
 }
 
-NDArray sqrt(const NDArray& x)
+Matrix sqrt(const Matrix& x)
 {
     return unary_operator(x, [](float a) { return std::sqrt(a); });
 }
 
-NDArray log(const NDArray& x)
+Matrix log(const Matrix& x)
 {
     return unary_operator(x, [](float a) { return std::log(a); });
 }
 
-NDArray exp(const NDArray& x)
+Matrix exp(const Matrix& x)
 {
     return unary_operator(x, [](float a) { return std::exp(a); });
 }
 
-NDArray sin(const NDArray& x)
+Matrix sin(const Matrix& x)
 {
     return unary_operator(x, [](float a) { return std::sin(a); });
 }
 
-NDArray cos(const NDArray& x)
+Matrix cos(const Matrix& x)
 {
     return unary_operator(x, [](float a) { return std::cos(a); });
 }
 
-NDArray tanh(const NDArray& x)
+Matrix tanh(const Matrix& x)
 {
     return unary_operator(x, [](float a) { return std::tanh(a); });
 }
 
-NDArray maximum(const NDArray& a, const NDArray& b)
+Matrix maximum(const Matrix& a, const Matrix& b)
 {
     return binary_operator(a, b,
                            [](float x, float y) { return x > y ? x : y; });
 }
 
-NDArray minimum(const NDArray& a, const NDArray& b)
+Matrix minimum(const Matrix& a, const Matrix& b)
 {
     return binary_operator(a, b,
                            [](float x, float y) { return x < y ? x : y; });
 }
 
-NDArray round(const NDArray& a)
+Matrix round(const Matrix& a)
 {
     return unary_operator(a, [](float x) { return std::round(x); });
 }
 
-NDArray::~NDArray() { delete[] m_Data; }
+Matrix::~Matrix() { delete[] m_Data; }
 
 // --- STATIC ---
 
-NDArray NDArray::zeros(const std::vector<size_t>& shape)
+Matrix Matrix::zeros(const std::vector<size_t>& shape)
 {
     size_t size = size_from_shape(shape);
     float* data = new float[size];
     std::fill(data, data + size, 0.0f);
 
-    return NDArray(data, shape);
+    return Matrix(data, shape);
 }
 
-NDArray NDArray::zeros_like(const NDArray& t)
+Matrix Matrix::zeros_like(const Matrix& t)
 {
     float* data = new float[t.size()];
     std::fill(data, data + t.size(), 0.0f);
 
-    return NDArray(data, t.shape());
+    return Matrix(data, t.shape());
 }
 
-NDArray NDArray::ones(const std::vector<size_t>& shape)
+Matrix Matrix::ones(const std::vector<size_t>& shape)
 {
     size_t size = size_from_shape(shape);
     float* data = new float[size];
     std::fill(data, data + size, 1.0f);
 
-    return NDArray(data, shape);
+    return Matrix(data, shape);
 }
 
-NDArray NDArray::ones_like(const NDArray& t)
+Matrix Matrix::ones_like(const Matrix& t)
 {
     float* data = new float[t.size()];
     std::fill(data, data + t.size(), 1.0f);
 
-    return NDArray(data, t.shape());
+    return Matrix(data, t.shape());
 }
 
-NDArray NDArray::eye(size_t dim)
+Matrix Matrix::eye(size_t dim)
 {
     if (dim == 0)
         throw std::invalid_argument("dim cannot be zero");
@@ -365,10 +364,10 @@ NDArray NDArray::eye(size_t dim)
     for (size_t i = 0; i < dim; i++)
         data[i * dim + i] = 1.0f;
 
-    return NDArray(data, {dim, dim});
+    return Matrix(data, {dim, dim});
 }
 
-NDArray NDArray::linspace(float start, float end, size_t samples)
+Matrix Matrix::linspace(float start, float end, size_t samples)
 {
     if (samples == 0)
         throw std::invalid_argument("samples cannot be zero");
@@ -378,7 +377,7 @@ NDArray NDArray::linspace(float start, float end, size_t samples)
     if (samples == 1)
     {
         data[0] = start;
-        return NDArray(data, {1});
+        return Matrix(data, {1});
     }
 
     const float step = (end - start) / static_cast<float>(samples - 1);
@@ -386,12 +385,12 @@ NDArray NDArray::linspace(float start, float end, size_t samples)
     for (size_t i = 0; i < samples; ++i)
         data[i] = start + static_cast<float>(i) * step;
 
-    return NDArray(data, {samples});
+    return Matrix(data, {samples});
 }
 
-void NDArray::seed(int s) { rng.seed(s); }
+void Matrix::seed(int s) { rng.seed(s); }
 
-NDArray NDArray::normal(const std::vector<size_t>& shape, float mu, float sigma)
+Matrix Matrix::normal(const std::vector<size_t>& shape, float mu, float sigma)
 {
     size_t size = 1;
     for (const size_t& dim : shape)
@@ -406,10 +405,10 @@ NDArray NDArray::normal(const std::vector<size_t>& shape, float mu, float sigma)
     for (size_t i = 0; i < size; i++)
         data[i] = distribution(rng);
 
-    return NDArray(data, shape);
+    return Matrix(data, shape);
 }
 
-NDArray NDArray::uniform(const std::vector<size_t>& shape, float a, float b)
+Matrix Matrix::uniform(const std::vector<size_t>& shape, float a, float b)
 {
     size_t size = 1;
     for (const size_t& dim : shape)
@@ -424,7 +423,7 @@ NDArray NDArray::uniform(const std::vector<size_t>& shape, float a, float b)
     for (size_t i = 0; i < size; i++)
         data[i] = distribution(rng);
 
-    return NDArray(data, shape);
+    return Matrix(data, shape);
 }
 
-std::default_random_engine NDArray::rng((std::random_device())());
+std::default_random_engine Matrix::rng((std::random_device())());

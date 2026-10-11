@@ -4,9 +4,9 @@
 #include "activations.hpp"
 #include "computational_graph.hpp"
 #include "losses.hpp"
+#include "matrix.hpp"
 #include "metrics.hpp"
 #include "modules.hpp"
-#include "ndarray.hpp"
 #include "optimizer.hpp"
 
 int main(int argc, const char** argv)
@@ -15,16 +15,16 @@ int main(int argc, const char** argv)
     const size_t output_dim = 1;
 
     std::vector<Tensor> x;
-    x.emplace_back(NDArray({0.0f, 0.0f}, {input_dim}), false);
-    x.emplace_back(NDArray({0.0f, 1.0f}, {input_dim}), false);
-    x.emplace_back(NDArray({1.0f, 0.0f}, {input_dim}), false);
-    x.emplace_back(NDArray({1.0f, 1.0f}, {input_dim}), false);
+    x.emplace_back(Matrix({0.0f, 0.0f}, {input_dim}), false);
+    x.emplace_back(Matrix({0.0f, 1.0f}, {input_dim}), false);
+    x.emplace_back(Matrix({1.0f, 0.0f}, {input_dim}), false);
+    x.emplace_back(Matrix({1.0f, 1.0f}, {input_dim}), false);
 
     std::vector<Tensor> y;
-    y.emplace_back(NDArray(0.0f), false);
-    y.emplace_back(NDArray(1.0f), false);
-    y.emplace_back(NDArray(1.0f), false);
-    y.emplace_back(NDArray(0.0f), false);
+    y.emplace_back(Matrix(0.0f), false);
+    y.emplace_back(Matrix(1.0f), false);
+    y.emplace_back(Matrix(1.0f), false);
+    y.emplace_back(Matrix(0.0f), false);
 
     Model model;
     const size_t hidden_dim = 8;
@@ -41,10 +41,10 @@ int main(int argc, const char** argv)
 
     for (size_t e = 0; e < 1000; e++)
     {
-        // NDArray epoch_loss = 0.0f;
+        // Matrix epoch_loss = 0.0f;
         for (size_t i = 0; i < n_batches; i++)
         {
-            NDArray batch_loss = 0.0f;
+            Matrix batch_loss = 0.0f;
             const size_t batch_start = i * batch_size;
             const size_t batch_end =
                 std::min(batch_start + batch_size, x.size());

@@ -1,19 +1,19 @@
-#ifndef NDARRAY_HPP
-#define NDARRAY_HPP
+#ifndef MATRIX_HPP
+#define MATRIX_HPP
 
 #include <cstddef>
 #include <format>
 #include <random>
 #include <vector>
 
-class NDArray
+class Matrix
 {
 public:
-    NDArray(float data);
-    NDArray(float* data, const std::vector<size_t>& shape);
-    NDArray(const std::vector<float>& data, const std::vector<size_t>& shape);
-    NDArray(const NDArray& other);
-    NDArray(NDArray&& other);
+    Matrix(float data);
+    Matrix(float* data, const std::vector<size_t>& shape);
+    Matrix(const std::vector<float>& data, const std::vector<size_t>& shape);
+    Matrix(const Matrix& other);
+    Matrix(Matrix&& other);
 
     inline const float* data() const { return m_Data; }
     inline const std::vector<size_t>& shape() const { return m_Shape; }
@@ -24,57 +24,57 @@ public:
     explicit operator float() const;
 
     //  Operators
-    NDArray operator-() const;
-    friend NDArray operator+(const NDArray& a, const NDArray& b);
-    friend NDArray operator-(const NDArray& a, const NDArray& b);
-    friend NDArray operator*(const NDArray& a, const NDArray& b);
-    friend NDArray operator/(const NDArray& a, const NDArray& b);
+    Matrix operator-() const;
+    friend Matrix operator+(const Matrix& a, const Matrix& b);
+    friend Matrix operator-(const Matrix& a, const Matrix& b);
+    friend Matrix operator*(const Matrix& a, const Matrix& b);
+    friend Matrix operator/(const Matrix& a, const Matrix& b);
 
     // Assign operators
-    NDArray& operator=(const NDArray& other);
-    NDArray& operator=(NDArray&& other) noexcept;
-    NDArray& operator+=(const NDArray& other);
-    NDArray& operator-=(const NDArray& other);
-    NDArray& operator*=(const NDArray& other);
-    NDArray& operator/=(const NDArray& other);
+    Matrix& operator=(const Matrix& other);
+    Matrix& operator=(Matrix&& other) noexcept;
+    Matrix& operator+=(const Matrix& other);
+    Matrix& operator-=(const Matrix& other);
+    Matrix& operator*=(const Matrix& other);
+    Matrix& operator/=(const Matrix& other);
 
     // Logic operators
-    friend NDArray operator<(const NDArray& a, const NDArray& b);
-    friend NDArray operator<=(const NDArray& a, const NDArray& b);
-    friend NDArray operator==(const NDArray& a, const NDArray& b);
-    friend NDArray operator>=(const NDArray& a, const NDArray& b);
-    friend NDArray operator>(const NDArray& a, const NDArray& b);
+    friend Matrix operator<(const Matrix& a, const Matrix& b);
+    friend Matrix operator<=(const Matrix& a, const Matrix& b);
+    friend Matrix operator==(const Matrix& a, const Matrix& b);
+    friend Matrix operator>=(const Matrix& a, const Matrix& b);
+    friend Matrix operator>(const Matrix& a, const Matrix& b);
 
     // functions
-    NDArray transpose() const;
-    friend NDArray sum(const NDArray& a);
-    friend NDArray mean(const NDArray& a);
-    friend NDArray product(const NDArray& a);
-    friend NDArray matmul(const NDArray& a, const NDArray& b);
-    friend NDArray pow(const NDArray& x, const NDArray& e);
-    friend NDArray abs(const NDArray& x);
-    friend NDArray sqrt(const NDArray& x);
-    friend NDArray log(const NDArray& x);
-    friend NDArray exp(const NDArray& x);
-    friend NDArray sin(const NDArray& x);
-    friend NDArray cos(const NDArray& x);
-    friend NDArray tanh(const NDArray& x);
-    friend NDArray maximum(const NDArray& a, const NDArray& b);
-    friend NDArray minimum(const NDArray& a, const NDArray& b);
+    Matrix transpose() const;
+    friend Matrix sum(const Matrix& a);
+    friend Matrix mean(const Matrix& a);
+    friend Matrix product(const Matrix& a);
+    friend Matrix matmul(const Matrix& a, const Matrix& b);
+    friend Matrix pow(const Matrix& x, const Matrix& e);
+    friend Matrix abs(const Matrix& x);
+    friend Matrix sqrt(const Matrix& x);
+    friend Matrix log(const Matrix& x);
+    friend Matrix exp(const Matrix& x);
+    friend Matrix sin(const Matrix& x);
+    friend Matrix cos(const Matrix& x);
+    friend Matrix tanh(const Matrix& x);
+    friend Matrix maximum(const Matrix& a, const Matrix& b);
+    friend Matrix minimum(const Matrix& a, const Matrix& b);
 
-    friend NDArray round(const NDArray& a);
+    friend Matrix round(const Matrix& a);
 
-    ~NDArray();
+    ~Matrix();
 
 private:
     template <typename Op>
-    friend NDArray unary_operator(const NDArray& x, Op op);
+    friend Matrix unary_operator(const Matrix& x, Op op);
 
     template <typename Op>
-    friend NDArray binary_operator(const NDArray& a, const NDArray& b, Op op);
+    friend Matrix binary_operator(const Matrix& a, const Matrix& b, Op op);
 
     template <typename Op>
-    friend NDArray& binary_assign_operator(NDArray& a, const NDArray& b, Op op);
+    friend Matrix& binary_assign_operator(Matrix& a, const Matrix& b, Op op);
 
 private:
     float* m_Data;
@@ -82,32 +82,32 @@ private:
     size_t m_Size;
 
 public: // --- STATIC ---
-    static NDArray zeros(const std::vector<size_t>& shape = {});
-    static NDArray zeros_like(const NDArray& t);
+    static Matrix zeros(const std::vector<size_t>& shape = {});
+    static Matrix zeros_like(const Matrix& t);
 
-    static NDArray ones(const std::vector<size_t>& shape = {});
-    static NDArray ones_like(const NDArray& t);
+    static Matrix ones(const std::vector<size_t>& shape = {});
+    static Matrix ones_like(const Matrix& t);
 
-    static NDArray eye(size_t dim);
-    static NDArray linspace(float start, float end, size_t samples = 50);
+    static Matrix eye(size_t dim);
+    static Matrix linspace(float start, float end, size_t samples = 50);
 
     static std::default_random_engine rng;
 
     static void seed(int s);
 
-    static NDArray normal(const std::vector<size_t>& shape = {},
-                          float mu = 0.0f, float sigma = 1.0f);
+    static Matrix normal(const std::vector<size_t>& shape = {}, float mu = 0.0f,
+                         float sigma = 1.0f);
 
-    static NDArray uniform(const std::vector<size_t>& shape = {},
-                           float a = 0.0f, float b = 1.0f);
+    static Matrix uniform(const std::vector<size_t>& shape = {}, float a = 0.0f,
+                          float b = 1.0f);
 };
 
 template <>
-struct std::formatter<NDArray>
+struct std::formatter<Matrix>
 {
     constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
 
-    auto format(const NDArray& t, std::format_context& ctx) const
+    auto format(const Matrix& t, std::format_context& ctx) const
     {
         auto out = ctx.out();
 
@@ -165,17 +165,17 @@ struct std::formatter<NDArray>
 };
 
 template <typename Op>
-NDArray unary_operator(const NDArray& x, Op op)
+Matrix unary_operator(const Matrix& x, Op op)
 {
     float* data = new float[x.size()];
     for (size_t i = 0; i < x.size(); ++i)
         data[i] = op(x.m_Data[i]);
 
-    return NDArray(data, x.m_Shape);
+    return Matrix(data, x.m_Shape);
 }
 
 template <typename Op>
-NDArray binary_operator(const NDArray& a, const NDArray& b, Op op)
+Matrix binary_operator(const Matrix& a, const Matrix& b, Op op)
 {
     if (!a.is_scalar() && !b.is_scalar() && a.shape() != b.shape())
         throw std::invalid_argument(
@@ -191,11 +191,11 @@ NDArray binary_operator(const NDArray& a, const NDArray& b, Op op)
         data[i] = op(x, y);
     }
 
-    return NDArray(data, a.is_scalar() ? b.shape() : a.shape());
+    return Matrix(data, a.is_scalar() ? b.shape() : a.shape());
 }
 
 template <typename Op>
-NDArray& binary_assign_operator(NDArray& a, const NDArray& b, Op op)
+Matrix& binary_assign_operator(Matrix& a, const Matrix& b, Op op)
 {
     const bool b_singleton = b.size() == 1;
 

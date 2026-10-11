@@ -5,15 +5,15 @@ some machine learning models that (hopefully) _guess right_.
 
 ## Linear Algebra
 
-The core linear algebra module relies on the `NDArray` that only supports
+The core linear algebra module relies on the `Matrix` that only supports
 scalar, vectors and matrices. Internally everything is a matrix but the API lets
 the user do something like
 
 ```cpp
-NDArray a = 2.0f;
+Matrix a = 2.0f;
 ```
 
-The `NDArray` must be considered as a mathematical object only, not a data
+The `Matrix` must be considered as a mathematical object only, not a data
 structure like `numpy` arrays that allow for sorting, complex indexing,
 broadcasting and so on.
 

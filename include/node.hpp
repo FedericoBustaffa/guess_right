@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-#include "ndarray.hpp"
+#include "matrix.hpp"
 
 enum class Operation
 {
@@ -31,18 +31,18 @@ enum class Operation
 
 struct Node
 {
-    Node(const NDArray& data, bool requires_grad, Operation operation,
+    Node(const Matrix& data, bool requires_grad, Operation operation,
          std::vector<std::shared_ptr<Node>>&& parents);
 
-    Node(NDArray&& data, bool requires_grad, Operation operation,
+    Node(Matrix&& data, bool requires_grad, Operation operation,
          std::vector<std::shared_ptr<Node>>&& parents);
 
     void backward();
 
     ~Node();
 
-    NDArray data;
-    NDArray grad;
+    Matrix data;
+    Matrix grad;
     bool requires_grad;
     Operation operation;
     std::vector<std::shared_ptr<Node>> parents;

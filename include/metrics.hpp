@@ -3,7 +3,7 @@
 
 #include "tensor.hpp"
 
-NDArray accuracy_score(const std::vector<Tensor>& predicted,
-                       const std::vector<Tensor>& target);
+Matrix accuracy_score(const std::vector<Tensor>& predicted,
+                      const std::vector<Tensor>& target);
 
 #endif

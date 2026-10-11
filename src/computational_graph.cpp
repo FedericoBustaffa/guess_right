@@ -1,5 +1,5 @@
 #include "computational_graph.hpp"
-#include "ndarray.hpp"
+#include "matrix.hpp"
 
 #include <functional>
 #include <unordered_set>
@@ -15,7 +15,7 @@ void ComputationalGraph::backward(const std::shared_ptr<Node>& node)
     if (!node->requires_grad)
         return;
 
-    node->grad = NDArray::ones_like(node->data);
+    node->grad = Matrix::ones_like(node->data);
 
     std::vector<Node*> order;
     std::unordered_set<Node*> visited;

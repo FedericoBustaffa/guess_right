@@ -8,10 +8,10 @@ class Parameter : public Tensor
 public:
     Parameter(float data, bool requires_grad = true, float weight_decay = 1.0f);
 
-    Parameter(const NDArray& data, bool requires_grad = true,
+    Parameter(const Matrix& data, bool requires_grad = true,
               float weight_decay = 1.0f);
 
-    Parameter(NDArray&& data, bool requires_grad = true,
+    Parameter(Matrix&& data, bool requires_grad = true,
               float weight_decay = 1.0f);
 
     inline float weight_decay() const { return m_WeightDecay; }

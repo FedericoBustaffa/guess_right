@@ -6,8 +6,8 @@
 #include "computational_graph.hpp"
 #include "data.hpp"
 #include "losses.hpp"
+#include "matrix.hpp"
 #include "modules.hpp"
-#include "ndarray.hpp"
 #include "optimizer.hpp"
 
 std::vector<Tensor> random(size_t n, const std::vector<size_t>& shape, float mu,
@@ -15,7 +15,7 @@ std::vector<Tensor> random(size_t n, const std::vector<size_t>& shape, float mu,
 {
     std::vector<Tensor> out;
     for (size_t i = 0; i < n; i++)
-        out.emplace_back(NDArray::normal(shape, mu, sigma));
+        out.emplace_back(Matrix::normal(shape, mu, sigma));
 
     return out;
 }
@@ -24,8 +24,8 @@ int main(int argc, const char** argv)
 {
     const size_t input_dim = 1;
     const size_t output_dim = 1;
-    NDArray slope = NDArray::normal({input_dim, output_dim}, 1, 1);
-    NDArray intercept = NDArray::normal({output_dim}, 2, 0.1);
+    Matrix slope = Matrix::normal({input_dim, output_dim}, 1, 1);
+    Matrix intercept = Matrix::normal({output_dim}, 2, 0.1);
 
     // training set
     std::vector<Tensor> x_train = random(256, {input_dim}, 0, 1);

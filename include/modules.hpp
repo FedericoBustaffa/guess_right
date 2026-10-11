@@ -1,8 +1,9 @@
 #ifndef MODULES_HPP
 #define MODULES_HPP
 
-#include "parameter.hpp"
 #include <vector>
+
+#include "parameter.hpp"
 
 // --------------
 // --- MODULE ---

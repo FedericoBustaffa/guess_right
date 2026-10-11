@@ -4,22 +4,22 @@
 #include <functional>
 #include <memory>
 
-#include "ndarray.hpp"
+#include "matrix.hpp"
 #include "node.hpp"
 
 class Tensor
 {
 public:
     Tensor(float data, bool requires_grad = false);
-    Tensor(const NDArray& data, bool requires_grad = false);
-    Tensor(NDArray&& data, bool requires_grad = false);
+    Tensor(const Matrix& data, bool requires_grad = false);
+    Tensor(Matrix&& data, bool requires_grad = false);
     Tensor(const Tensor& other);
     Tensor(Tensor&& other) noexcept;
 
-    inline const NDArray& item() const { return m_Node->data; }
-    inline NDArray& item() { return m_Node->data; }
-    inline const NDArray& gradient() const { return m_Node->grad; }
-    inline NDArray& gradient() { return m_Node->grad; }
+    inline const Matrix& item() const { return m_Node->data; }
+    inline Matrix& item() { return m_Node->data; }
+    inline const Matrix& gradient() const { return m_Node->grad; }
+    inline Matrix& gradient() { return m_Node->grad; }
     inline bool requires_grad() const { return m_Node->requires_grad; }
     inline const std::vector<size_t>& shape() const
     {
@@ -72,15 +72,15 @@ private:
 
     friend Tensor unary_operator(
         const Tensor& a, Operation operation,
-        const std::function<NDArray(const NDArray&)>& func);
+        const std::function<Matrix(const Matrix&)>& func);
 
     friend Tensor binary_operator(
         const Tensor& a, const Tensor& b, Operation operation,
-        const std::function<NDArray(const NDArray&, const NDArray&)>& func);
+        const std::function<Matrix(const Matrix&, const Matrix&)>& func);
 
     friend Tensor& binary_assign_operator(
         Tensor& a, const Tensor& b, Operation operation,
-        const std::function<NDArray(const NDArray&, const NDArray&)>& func);
+        const std::function<Matrix(const Matrix&, const Matrix&)>& func);
 
 private: // Members
     std::shared_ptr<Node> m_Node;

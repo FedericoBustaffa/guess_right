@@ -1,16 +1,16 @@
 #include "node.hpp"
-#include "ndarray.hpp"
+#include "matrix.hpp"
 
-Node::Node(const NDArray& data, bool requires_grad, Operation operation,
+Node::Node(const Matrix& data, bool requires_grad, Operation operation,
            std::vector<std::shared_ptr<Node>>&& parents)
-    : data(data), grad(NDArray::zeros_like(data)), requires_grad(requires_grad),
+    : data(data), grad(Matrix::zeros_like(data)), requires_grad(requires_grad),
       operation(operation), parents(std::move(parents))
 {
 }
 
-Node::Node(NDArray&& data, bool requires_grad, Operation operation,
+Node::Node(Matrix&& data, bool requires_grad, Operation operation,
            std::vector<std::shared_ptr<Node>>&& parents)
-    : data(std::move(data)), grad(NDArray::zeros_like(this->data)),
+    : data(std::move(data)), grad(Matrix::zeros_like(this->data)),
       requires_grad(requires_grad), operation(operation),
       parents(std::move(parents))
 {
