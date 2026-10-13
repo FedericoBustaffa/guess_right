@@ -40,4 +40,5 @@ public:
 private:
     bool m_Previous;
 };
+
 #endif
